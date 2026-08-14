@@ -1,0 +1,1 @@
+"""LocalScribe application package."""
