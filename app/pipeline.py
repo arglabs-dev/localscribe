@@ -5,6 +5,7 @@ import logging
 
 from .align import build_turns
 from .diarization import Diarizer
+from .identity import enforce_unique_voice_profiles
 from .metadata import extract_metadata
 from .participants import map_participants
 from .render import apply_names, write_outputs
@@ -51,7 +52,8 @@ class LocalScribePipeline:
             if store.list_profiles():
                 runtime = self.cfg["runtime"]
                 embedder = SpeakerEmbedder(Path(runtime["voice_embedding_model_path"]), runtime["device"])
-                participant_map.update(resolve_voice_profiles(audio_path, intervals, store, embedder, voice_cfg))
+                voice_map = resolve_voice_profiles(audio_path, intervals, store, embedder, voice_cfg)
+                participant_map.update(enforce_unique_voice_profiles(voice_map))
 
         # Explicit self-introduction is the fallback for speakers not recognized by a saved profile.
         intro_map = map_participants(turns, intro_window)
