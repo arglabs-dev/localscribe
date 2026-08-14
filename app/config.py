@@ -19,6 +19,7 @@ def load_config() -> dict:
     config.setdefault("session", {})
     config.setdefault("cleanup", {})
     config.setdefault("output", {})
+    config.setdefault("voice_profiles", {})
     config["runtime"] = {
         "device": os.getenv("DEVICE", "cpu"),
         "language": os.getenv("LANGUAGE", config["transcription"].get("language", "es")),
@@ -26,6 +27,7 @@ def load_config() -> dict:
         "whisper_model": os.getenv("WHISPER_MODEL", "large-v3"),
         "whisper_model_path": os.getenv("WHISPER_MODEL_PATH", "/app/models/whisper"),
         "pyannote_model_path": os.getenv("PYANNOTE_MODEL_PATH", "/app/models/pyannote-community-1"),
+        "voice_embedding_model_path": os.getenv("VOICE_EMBEDDING_MODEL_PATH", "/app/models/voice-embedding"),
         "hf_token": os.getenv("HF_TOKEN") or None,
         "allow_model_download": os.getenv("ALLOW_MODEL_DOWNLOAD", "0") == "1",
     }
@@ -39,6 +41,8 @@ def paths() -> dict[str, Path]:
         "output": DATA_DIR / "output",
         "completed": DATA_DIR / "completed",
         "failed": DATA_DIR / "failed",
+        "profiles": DATA_DIR / "profiles",
+        "enrollment": DATA_DIR / "enrollment",
     }
     for directory in directories.values():
         directory.mkdir(parents=True, exist_ok=True)
