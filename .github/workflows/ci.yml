@@ -23,4 +23,4 @@ jobs:
       - name: Compile application sources
         run: python -m compileall -q app scripts
       - name: Run deterministic regression suite
-        run: pytest -q
+        run: python -m pytest -q
