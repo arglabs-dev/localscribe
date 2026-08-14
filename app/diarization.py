@@ -1,20 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 import logging
 
 import torch
 from pyannote.audio import Pipeline
 
+from .types import SpeakerInterval
+
 log = logging.getLogger("localscribe.diarization")
-
-
-@dataclass(frozen=True)
-class SpeakerInterval:
-    start: float
-    end: float
-    speaker_id: str
 
 
 def intervals_from_output(output) -> list[SpeakerInterval]:

@@ -1,0 +1,9 @@
+Ejemplo de cabecera para una sesión de prueba:
+
+Hoy es jueves 13 de agosto, son las 5:30 de la tarde.
+Sesión de despacho jurídico de Justa Ley.
+Yo soy Armando Reyes.
+Yo soy Jimena Hernández.
+
+Después de esta cabecera puede comenzar la conversación normal.
+Cada auto-presentación debe ser pronunciada por la persona cuyo nombre se declara.
