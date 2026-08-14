@@ -33,12 +33,14 @@ def build_turns(
     words: list[dict] = []
 
     for segment in whisper_segments:
+        added_word = False
         if segment.words:
             for word in segment.words:
                 if word.start is None or word.end is None:
                     continue
                 words.append({"start": float(word.start), "end": float(word.end), "text": word.word})
-        else:
+                added_word = True
+        if not added_word:
             words.append({"start": float(segment.start), "end": float(segment.end), "text": segment.text})
 
     turns: list[dict] = []
