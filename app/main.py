@@ -25,7 +25,7 @@ def wait_until_stable(path: Path, stable_seconds: float, poll_seconds: float = 1
         stat = path.stat()
         current = (stat.st_size, stat.st_mtime_ns)
         now = time.monotonic()
-        if current == signature and stat.st_size > 0:
+        if current == signature:
             stable_since = stable_since or now
             if now - stable_since >= stable_seconds:
                 return True
