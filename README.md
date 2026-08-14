@@ -82,7 +82,7 @@ La suite ligera prueba la lógica determinística posterior a los modelos sin de
 ```bash
 python -m pip install -r requirements-dev.txt
 python -m compileall -q app scripts
-pytest -q
+python -m pytest -q
 ```
 
 GitHub Actions ejecuta esta suite en cada PR y en cada push a `main`.
