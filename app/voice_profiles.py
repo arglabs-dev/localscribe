@@ -107,9 +107,10 @@ class VoiceProfileStore:
 
 class SpeakerEmbedder:
     def __init__(self, model_path: Path, device: str):
-        if not model_path.exists() or not any(model_path.iterdir()):
+        checkpoint = model_path / "pytorch_model.bin"
+        if not checkpoint.is_file():
             raise RuntimeError(
-                f"Voice embedding model not found at {model_path}. "
+                f"Voice embedding checkpoint not found at {checkpoint}. "
                 "Accept the pyannote/embedding conditions and rerun model bootstrap."
             )
         import torch
@@ -117,7 +118,7 @@ class SpeakerEmbedder:
         from pyannote.core import Segment
 
         self.Segment = Segment
-        model = Model.from_pretrained(str(model_path))
+        model = Model.from_pretrained(str(checkpoint))
         self.inference = Inference(model, window="whole")
         if device.startswith("cuda"):
             if not torch.cuda.is_available():
@@ -172,8 +173,9 @@ def resolve_voice_profiles(
         if not vectors:
             continue
         dimension = len(vectors[0])
+        total_duration = sum(durations)
         average = [
-            sum(vector[index] * duration for vector, duration in zip(vectors, durations)) / sum(durations)
+            sum(vector[index] * duration for vector, duration in zip(vectors, durations)) / total_duration
             for index in range(dimension)
         ]
         match = store.best_match(
