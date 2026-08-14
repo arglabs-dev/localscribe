@@ -19,7 +19,8 @@ session:
 
 cleanup:
   enabled: true
-  fillers: [eh, em, mmm, mm, este]
+  # Keep ambiguous discourse words (for example, `este`) unless explicitly opted in.
+  fillers: [eh, em, mmm, mm]
   collapse_repetitions: true
 
 output:
