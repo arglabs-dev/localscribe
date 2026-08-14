@@ -10,11 +10,10 @@ log = logging.getLogger("localscribe")
 
 
 def main() -> None:
-    config = load_config()
+    load_config()
     directories = paths()
     log.info("LocalScribe bootstrap ready; watching will be added by PLA-138")
     log.info("Input directory: %s", directories["input"])
-    log.debug("Configuration: %s", config)
     while True:
         time.sleep(60)
 
