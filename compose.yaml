@@ -12,3 +12,14 @@ services:
       - ./models:/app/models
       - ./config:/app/config:ro
     command: ["python", "-m", "app.main"]
+
+  bootstrap-models:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles: ["setup"]
+    env_file:
+      - .env
+    volumes:
+      - ./models:/app/models
+    command: ["python", "scripts/bootstrap_models.py"]

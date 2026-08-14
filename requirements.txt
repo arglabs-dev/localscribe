@@ -1,1 +1,6 @@
+faster-whisper==1.2.1
+pyannote.audio==4.0.4
+watchdog>=6,<7
 PyYAML>=6,<7
+dateparser>=1.2,<2
+huggingface_hub>=0.34,<1
