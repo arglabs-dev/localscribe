@@ -12,6 +12,17 @@ El desarrollo se gestiona en Linear, proyecto `LocalScribe`. El repositorio usa 
 cp .env.example .env
 mkdir -p data/{input,processing,output,completed,failed} models
 docker compose build
+```
+
+La primera vez, con internet disponible y después de aceptar las condiciones de `pyannote/speaker-diarization-community-1`, agrega temporalmente `HF_TOKEN` a `.env` y ejecuta:
+
+```bash
+docker compose --profile setup run --rm bootstrap-models
+```
+
+Al terminar puedes quitar `HF_TOKEN`. Los modelos quedan persistidos bajo `./models` y la ejecución normal debe hacerse con `ALLOW_MODEL_DOWNLOAD=0`:
+
+```bash
 docker compose up -d localscribe
 ```
 
