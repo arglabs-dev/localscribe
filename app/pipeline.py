@@ -10,6 +10,7 @@ from .participants import map_participants
 from .render import apply_names, write_outputs
 from .text_utils import clean_fillers
 from .transcription import Transcriber
+from .voice_profiles import SpeakerEmbedder, VoiceProfileStore, resolve_voice_profiles
 
 log = logging.getLogger("localscribe.pipeline")
 
@@ -42,7 +43,21 @@ class LocalScribePipeline:
 
         turns = build_turns(segments, intervals, clean)
         intro_window = float(self.cfg["session"].get("intro_window_seconds", 180))
-        participant_map = map_participants(turns, intro_window)
+
+        voice_cfg = self.cfg.get("voice_profiles", {})
+        participant_map: dict[str, dict] = {}
+        if voice_cfg.get("enabled", True):
+            store = VoiceProfileStore(Path(voice_cfg.get("store_path", "/app/data/profiles/profiles.json")))
+            if store.list_profiles():
+                runtime = self.cfg["runtime"]
+                embedder = SpeakerEmbedder(Path(runtime["voice_embedding_model_path"]), runtime["device"])
+                participant_map.update(resolve_voice_profiles(audio_path, intervals, store, embedder, voice_cfg))
+
+        # Explicit self-introduction is the fallback for speakers not recognized by a saved profile.
+        intro_map = map_participants(turns, intro_window)
+        for speaker_id, resolution in intro_map.items():
+            participant_map.setdefault(speaker_id, resolution)
+
         turns = apply_names(turns, participant_map)
 
         runtime = self.cfg["runtime"]
