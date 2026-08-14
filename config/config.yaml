@@ -1,0 +1,28 @@
+watcher:
+  poll_seconds: 2
+  stable_seconds: 4
+  extensions: [.wav, .mp3, .m4a, .aac, .flac, .ogg, .mp4]
+
+transcription:
+  language: es
+  beam_size: 5
+  vad_filter: true
+  word_timestamps: true
+
+diarization:
+  min_speakers: null
+  max_speakers: null
+
+session:
+  intro_window_seconds: 180
+  fallback_timezone: America/Mexico_City
+
+cleanup:
+  enabled: true
+  fillers: [eh, em, mmm, mm, este]
+  collapse_repetitions: true
+
+output:
+  markdown: true
+  json: true
+  srt: true
