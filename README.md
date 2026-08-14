@@ -10,17 +10,17 @@ El desarrollo se gestiona en Linear, proyecto `LocalScribe`. El repositorio usa 
 
 ```bash
 cp .env.example .env
-mkdir -p data/{input,processing,output,completed,failed} models
+mkdir -p data/{input,processing,output,completed,failed,enrollment,profiles} models
 docker compose build
 ```
 
-La primera vez, con internet disponible y después de aceptar las condiciones de `pyannote/speaker-diarization-community-1`, agrega temporalmente `HF_TOKEN` a `.env` y ejecuta:
+La primera vez, con internet disponible, acepta las condiciones de `pyannote/speaker-diarization-community-1` y `pyannote/embedding`. Agrega temporalmente `HF_TOKEN` a `.env` y ejecuta:
 
 ```bash
 docker compose --profile setup run --rm bootstrap-models
 ```
 
-Al terminar puedes quitar `HF_TOKEN`. Los modelos quedan persistidos bajo `./models` y la ejecución normal debe hacerse con `ALLOW_MODEL_DOWNLOAD=0`:
+Al terminar puedes quitar `HF_TOKEN`. Los modelos quedan persistidos bajo `./models`, `PYANNOTE_METRICS_ENABLED=0` desactiva la telemetría y la ejecución normal usa `ALLOW_MODEL_DOWNLOAD=0`:
 
 ```bash
 docker compose up -d localscribe
@@ -41,9 +41,33 @@ docker compose logs -f localscribe
 
 Si un job falla, el subdirectorio de salida incluye `ERROR.txt` con el error y traceback.
 
+## Perfiles de voz locales
+
+Puedes registrar una voz una sola vez y reutilizarla en reuniones futuras. Coloca temporalmente una grabación limpia de una sola persona en `data/enrollment/` y ejecuta:
+
+```bash
+docker compose run --rm localscribe \
+  python -m app.voice_profiles enroll \
+  --name "Armando Reyes" \
+  --audio /app/data/enrollment/armando-reyes.wav
+```
+
+Registrar de nuevo el mismo nombre reemplaza su embedding. LocalScribe guarda únicamente el embedding normalizado y metadatos del perfil en `data/profiles/profiles.json`; no copia ni conserva por su cuenta el audio de enrollment.
+
+Lista y elimina perfiles con:
+
+```bash
+docker compose run --rm localscribe python -m app.voice_profiles list
+docker compose run --rm localscribe python -m app.voice_profiles delete --name "Armando Reyes"
+```
+
+Durante una reunión, LocalScribe compara fragmentos diarizados con los perfiles registrados. Solo asigna una identidad si cumple el umbral máximo de distancia coseno y, cuando existen varios candidatos, un margen mínimo respecto al segundo candidato. Ambos valores son configurables. Si la coincidencia no es suficientemente clara, no fuerza el nombre y usa como fallback la auto-presentación o `SPEAKER_XX`.
+
+La resolución queda trazable como `voice_profile`, `self_introduction` o `unresolved` en los artefactos estructurados. Los perfiles de voz sirven para etiquetado de reuniones, no para autenticación ni identificación forense.
+
 ## Cabecera recomendada de una sesión
 
-Para el MVP, habla de forma natural pero explícita durante los primeros minutos. Por ejemplo:
+Aunque existan perfiles de voz, una cabecera explícita sigue siendo útil como fallback y para metadatos:
 
 ```text
 Hoy es jueves 13 de agosto, son las 5:30 de la tarde.
@@ -70,7 +94,7 @@ Verifica que:
 - se crean los cuatro artefactos esperados en `output`;
 - `metadata.json` contiene fecha/hora, fuente del datetime y participantes;
 - `transcript.json` conserva `whisper_segments` raw y `speaker_id`;
-- Markdown/SRT muestran nombres cuando las auto-presentaciones fueron claras;
+- Markdown/SRT muestran nombres cuando un perfil o auto-presentación resuelve la identidad;
 - con la red desconectada después del bootstrap, una segunda grabación sigue procesándose sin descargar modelos.
 
 Este smoke test requiere modelos y un audio real; no se ejecuta en CI.
@@ -96,16 +120,18 @@ El contenedor crea y usa estas rutas:
 - `data/output`
 - `data/completed`
 - `data/failed`
+- `data/enrollment`
+- `data/profiles`
 - `models`
 
-Los audios, modelos y secretos no deben versionarse.
+Los audios, modelos, perfiles y secretos no deben versionarse.
 
 ## Arquitectura
 
 1. watcher de archivos;
 2. transcripción con Faster-Whisper;
 3. diarización con pyannote;
-4. resolución de participantes;
-5. extracción de metadatos;
-6. generación de Markdown, JSON y SRT;
-7. reconocimiento opcional por perfil de voz local.
+4. reconocimiento opcional por perfil de voz local;
+5. fallback de identidad por auto-presentación;
+6. extracción de metadatos;
+7. generación de Markdown, JSON y SRT.
