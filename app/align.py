@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 
-from .diarization import SpeakerInterval
+from .types import SpeakerInterval
 
 
 def speaker_for_range(start: float, end: float, intervals: list[SpeakerInterval]) -> str:
