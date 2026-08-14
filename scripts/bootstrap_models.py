@@ -10,6 +10,7 @@ from huggingface_hub import snapshot_download
 MODELS = Path("/app/models")
 WHISPER_DIR = MODELS / "whisper"
 PYANNOTE_DIR = MODELS / "pyannote-community-1"
+VOICE_EMBEDDING_DIR = MODELS / "voice-embedding"
 
 
 def main() -> None:
@@ -23,8 +24,9 @@ def main() -> None:
     token = os.getenv("HF_TOKEN")
     if not token:
         print(
-            "HF_TOKEN is required only for the initial pyannote Community-1 download.\n"
-            "Accept the model conditions on Hugging Face, set HF_TOKEN in .env, and rerun bootstrap.",
+            "HF_TOKEN is required only for the initial pyannote model downloads.\n"
+            "Accept the conditions for speaker-diarization-community-1 and pyannote/embedding, "
+            "set HF_TOKEN in .env, and rerun bootstrap.",
             file=sys.stderr,
         )
         raise SystemExit(2)
@@ -35,6 +37,14 @@ def main() -> None:
         repo_id="pyannote/speaker-diarization-community-1",
         token=token,
         local_dir=str(PYANNOTE_DIR),
+    )
+
+    print(f"Downloading pyannote speaker embedding model to {VOICE_EMBEDDING_DIR}...")
+    VOICE_EMBEDDING_DIR.mkdir(parents=True, exist_ok=True)
+    snapshot_download(
+        repo_id="pyannote/embedding",
+        token=token,
+        local_dir=str(VOICE_EMBEDDING_DIR),
     )
 
     print("Models are ready. Normal LocalScribe runs can now be offline.")
