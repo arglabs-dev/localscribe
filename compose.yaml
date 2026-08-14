@@ -1,0 +1,14 @@
+services:
+  localscribe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: localscribe
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./config:/app/config:ro
+    command: ["python", "-m", "app.main"]
