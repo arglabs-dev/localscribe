@@ -15,6 +15,7 @@ RUN python -m pip install --upgrade pip \
     && pip install -r requirements.txt
 
 COPY app ./app
+COPY scripts ./scripts
 COPY config ./config
 
 RUN mkdir -p /app/data/input /app/data/processing /app/data/output /app/data/completed /app/data/failed /app/models
