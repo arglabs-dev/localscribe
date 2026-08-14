@@ -87,9 +87,8 @@ class AudioHandler(FileSystemEventHandler):
             return
 
         output_dir = unique_target(self.directories["output"], processing_path.stem)
-        output_dir.mkdir(parents=True, exist_ok=False)
-
         try:
+            output_dir.mkdir(parents=True, exist_ok=False)
             metadata = self.pipeline.process(processing_path, output_dir)
             completed_path = unique_target(self.directories["completed"], processing_path.name)
             os.replace(processing_path, completed_path)
@@ -104,6 +103,7 @@ class AudioHandler(FileSystemEventHandler):
             failed_path = unique_target(self.directories["failed"], processing_path.name)
             if processing_path.exists():
                 os.replace(processing_path, failed_path)
+            output_dir.mkdir(parents=True, exist_ok=True)
             (output_dir / "ERROR.txt").write_text(
                 f"{type(exc).__name__}: {exc}\n\n{traceback.format_exc()}",
                 encoding="utf-8",
