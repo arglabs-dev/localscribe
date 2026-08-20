@@ -41,6 +41,27 @@ docker compose logs -f localscribe
 
 Si un job falla, el subdirectorio de salida incluye `ERROR.txt` con el error y traceback.
 
+## Progreso en logs
+
+Durante la transcripción, LocalScribe registra el avance en porcentajes para que los audios largos no parezcan detenidos. El intervalo se controla en `config/config.yaml`:
+
+```yaml
+transcription:
+  progress_log_interval_percent: 5
+```
+
+Con el valor por defecto se verán mensajes como:
+
+```text
+Transcription progress: 0% - reunion.m4a (log interval: 5%)
+Transcription progress: 5% - reunion.m4a
+Transcription progress: 10% - reunion.m4a
+...
+Transcription progress: 100% - reunion.m4a
+```
+
+Puedes cambiarlo, por ejemplo, a `10` para registrar solo 10%, 20%, 30%, etc. El valor debe ser un entero entre 1 y 100. El porcentaje corresponde al avance temporal de Faster-Whisper sobre el audio; después se registran explícitamente los cambios de etapa (`transcription`, `diarization` y `outputs`).
+
 ## Perfiles de voz locales
 
 Puedes registrar una voz una sola vez y reutilizarla en reuniones futuras. Coloca temporalmente una grabación limpia de una sola persona en `data/enrollment/` y ejecuta:
