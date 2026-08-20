@@ -6,6 +6,8 @@ import logging
 
 from faster_whisper import WhisperModel
 
+from .progress import PercentageProgress, parse_progress_step
+
 log = logging.getLogger("localscribe.transcription")
 
 
@@ -40,6 +42,7 @@ class Transcriber:
     def transcribe(self, audio_path: Path) -> tuple[list[Any], dict, list[dict]]:
         trans_cfg = self.cfg["transcription"]
         runtime = self.cfg["runtime"]
+        progress_step = parse_progress_step(trans_cfg.get("progress_log_interval_percent", 5))
 
         segments_iter, info = self.model.transcribe(
             str(audio_path),
@@ -47,9 +50,26 @@ class Transcriber:
             beam_size=int(trans_cfg.get("beam_size", 5)),
             vad_filter=bool(trans_cfg.get("vad_filter", True)),
             word_timestamps=bool(trans_cfg.get("word_timestamps", True)),
-            log_progress=True,
+            # LocalScribe owns percentage logging so its interval is configurable.
+            log_progress=False,
         )
-        segments = list(segments_iter)
+
+        duration = float(getattr(info, "duration", 0.0) or 0.0)
+        progress = PercentageProgress(progress_step)
+        log.info(
+            "Transcription progress: 0%% - %s (log interval: %d%%)",
+            audio_path.name,
+            progress_step,
+        )
+
+        segments: list[Any] = []
+        for segment in segments_iter:
+            segments.append(segment)
+            for percent in progress.advance(float(segment.end), duration):
+                log.info("Transcription progress: %d%% - %s", percent, audio_path.name)
+
+        for percent in progress.complete():
+            log.info("Transcription progress: %d%% - %s", percent, audio_path.name)
 
         raw_segments: list[dict] = []
         for segment in segments:
@@ -74,6 +94,6 @@ class Transcriber:
         metadata = {
             "language": getattr(info, "language", runtime["language"]),
             "language_probability": float(getattr(info, "language_probability", 0.0) or 0.0),
-            "duration": float(getattr(info, "duration", 0.0) or 0.0),
+            "duration": duration,
         }
         return segments, metadata, raw_segments

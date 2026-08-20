@@ -8,6 +8,7 @@ transcription:
   beam_size: 5
   vad_filter: true
   word_timestamps: true
+  progress_log_interval_percent: 5
 
 diarization:
   min_speakers: null

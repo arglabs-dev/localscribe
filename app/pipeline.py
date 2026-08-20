@@ -25,11 +25,13 @@ class LocalScribePipeline:
         self.diarizer = Diarizer(cfg)
 
     def process(self, audio_path: Path, out_dir: Path) -> dict:
-        log.info("Transcribing %s", audio_path.name)
+        log.info("Processing stage: transcription started - %s", audio_path.name)
         segments, transcription_info, raw_whisper = self.transcriber.transcribe(audio_path)
+        log.info("Processing stage: transcription completed - %s", audio_path.name)
 
-        log.info("Diarizing %s", audio_path.name)
+        log.info("Processing stage: diarization started - %s", audio_path.name)
         intervals = self.diarizer.diarize(audio_path)
+        log.info("Processing stage: diarization completed - %s", audio_path.name)
 
         cleanup_cfg = self.cfg["cleanup"]
 
@@ -75,4 +77,5 @@ class LocalScribePipeline:
         )
 
         write_outputs(out_dir, metadata, turns, raw_whisper, self.cfg["output"])
+        log.info("Processing stage: outputs completed - %s", audio_path.name)
         return metadata
